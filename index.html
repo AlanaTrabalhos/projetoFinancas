@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Bloco de Finanças</title>
+    <style>
+        /* Estilos gerais com foco em legibilidade e acessibilidade */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            font-size: 18px; /* Fonte maior para facilitar a leitura */
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1b4d3e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        /* Caixa de Resumo do Saldo */
+        .resumo-card {
+            background-color: #e8f5e9;
+            border: 2px solid #81c784;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .resumo-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            color: #2e7d32;
+        }
+
+        .valor-saldo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
+        /* Formulário Estilo Bloco de Notas */
+        .form-grupo {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+        }
+
+        input:focus, select:focus {
+            border-color: #1b4d3e;
+            outline: none;
+            background-color: #fff;
+        }
+
+        /* Botão grande e chamativo */
+        button {
+            width: 100%;
+            background-color: #1b4d3e;
+            color: white;
+            padding: 16px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #14382c;
+        }
+
+        /* Histórico de Lançamentos */
+        .historico-titulo {
+            margin-top: 30px;
+            font-size: 22px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+            color: #333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        li {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 17px;
+        }
+
+        li.receita {
+            border-left: 6px solid #2e7d32;
+        }
+
+        li.despesa {
+            border-left: 6px solid #c62828;
+        }
+
+        .btn-apagar {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-apagar:hover {
+            background-color: #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Meu Bloco de Finanças</h1>
+        <div class="subtitle">Anote seus ganhos e gastos de forma simples</div>
+
+        <!-- Resumo do Saldo -->
+        <div class="resumo-card">
+            <h2>O seu Saldo Atual é:</h2>
+            <div id="saldo-total" class="valor-saldo">R$ 0,00</div>
+        </div>
+
+        <!-- Formulário de Nova Transação -->
+        <div class="form-grupo">
+            <label for="descricao">O que foi?</label>
+            <input type="text" id="descricao" placeholder="Ex: Aposentadoria, Mercado, Remédio...">
+        </div>
+
+        <div class="form-grupo">
+            <label for="valor">Valor (R$)</label>
+            <input type="number" id="valor" step="0.01" placeholder="Ex: 150,00">
+        </div>
+
+        <div class="form-grupo">
+            <label for="tipo">Tipo de Movimento</label>
+            <select id="tipo">
+                <option value="receita">Dinheiro que Entrou (Receita)</option>
+                <option value="despesa">Dinheiro que Saiu (Conta/Gasto)</option>
+            </select>
+        </div>
+
+        <button onclick="adicionarTransacao()">Salvar Anotação</button>
+
+        <!-- Lista / Extrato Estilo Bloco de Notas -->
+        <div class="historico-titulo">Suas Anotações Recentes</div>
+        <ul id="lista-transacoes">
+            <!-- Os itens entram aqui automaticamente -->
+        </ul>
+    </div>
+
+    <script>
+        let transacoes = [];
+
+        function adicionarTransacao() {
+            const descricaoInput = document.getElementById('descricao');
+            const valorInput = document.getElementById('valor');
+            const tipoInput = document.getElementById('tipo');
+
+            const descricao = descricaoInput.value.trim();
+            const valor = parseFloat(valorInput.value);
+            const tipo = tipoInput.value;
+
+            if (descricao === "" || isNaN(valor) || valor <= 0) {
+                alert("Por favor, preencha o que foi e digite um valor válido maior que zero.");
+                return;
+            }
+
+            const transacao = {
+                id: Date.now(),
+                descricao: descricao,
+                valor: valor,
+                tipo: tipo
+            };
+
+            transacoes.push(transacao);
+            atualizarTela();
+
+            // Limpar campos
+            descricaoInput.value = "";
+            valorInput.value = "";
+            descricaoInput.focus();
+        }
+
+        function apagarTransacao(id) {
+            transacoes = transacoes.filter(t => t.id !== id);
+            atualizarTela();
+        }
+
+        function atualizarTela() {
+            const lista = document.getElementById('lista-transacoes');
+            lista.innerHTML = "";
+
+            let saldo = 0;
+
+            transacoes.forEach(t => {
+                if (t.tipo === 'receita') {
+                    saldo += t.valor;
+                } else {
+                    saldo -= t.valor;
+                }
+
+                const item = document.createElement('li');
+                item.className = t.tipo;
+                
+                const valorFormatado = t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const sinal = t.tipo === 'receita' ? '+' : '-';
+
+                item.innerHTML = `
+                    <span><strong>${t.descricao}</strong> (${sinal} ${valorFormatado})</span>
+                    <button class="btn-apagar" onclick="apagarTransacao(${t.id})">Apagar</button>
+                `;
+
+                lista.appendChild(item);
+            });
+
+            const saldoFormatado = saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const elementoSaldo = document.getElementById('saldo-total');
+            elementoSaldo.innerText = saldoFormatado;
+
+            // Mudar cor do saldo dependendo se está positivo ou negativo
+            if (saldo < 0) {
+                elementoSaldo.style.color = '#c62828';
+            } else {
+                elementoSaldo.style.color = '#1b5e20';
+            }
+        }
+    </script>
+</body>
+</html>
